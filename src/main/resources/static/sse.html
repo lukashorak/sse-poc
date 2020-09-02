@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Job Notifications</title>
+<script>
+
+
+var subscribe = function() {  
+  var eventSource = new EventSource('http://localhost:8080/notification/newNotification');
+  var sse = new EventSource('http://localhost:8080/notification/newNotification');
+
+sse.onmessage = function(e){
+	console.log("Message",e);
+}
+	console.log("Start");
+
+sse.addEventListener("ping", function(event) {
+  var newElement = document.createElement("li");
+  var time = JSON.parse(event.data).time;
+  newElement.innerHTML = "ping at " + time;
+  eventList.appendChild(newElement);
+});
+
+sse.addEventListener("message", function(event) {
+console.log(event);
+    document.getElementById("result").innerHTML = event.data;
+}, false);
+
+  eventSource.onmessage = function(e) {    
+    console.log(e);
+	var notification = JSON.parse(e.data);               
+    document.getElementById("notificationDiv").innerHTML += notification.text + " at " + new Date(notification.time) + "<br/>";
+  };
+}
+window.onload = subscribe;
+window.onbeforeunload = function() {
+  eventSource.close();
+ }
+</script>
+</head>
+<body>
+  <h1>Notifications: </h1>
+  <div id="notificationDiv"></div>
+</body>
+</html>
